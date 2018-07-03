@@ -1,0 +1,19 @@
+{
+    "name": "redgo/monitor-ding",
+    "description": "用于给钉钉自定义机器人发送消息",
+    "type": "library",
+    "authors": [
+        {
+            "name": "redgo",
+            "email": "1223858310@qq.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "SuperClosure\\": "src/"
+        }
+    }
+}
