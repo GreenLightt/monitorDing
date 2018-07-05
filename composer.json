@@ -1,5 +1,6 @@
 {
     "name": "redgo/monitor-ding",
+    "license": "MIT",
     "description": "用于给钉钉自定义机器人发送消息",
     "type": "library",
     "authors": [
