@@ -5,6 +5,8 @@ use Illuminate\Support\ServiceProvider;
 
 class MonitorDingServiceProvider extends ServiceProvider {
 
+    protected $defer = true;
+
     /**
      * Boot the provider.
      *
@@ -26,8 +28,14 @@ class MonitorDingServiceProvider extends ServiceProvider {
     public function register()
     {
         $this->app->singleton(MonitorDingClient::class, function ($app) {
-            return;
+            $config = config('monitorDing');
+            return new MonitorDingClient($config['webhook'], $config['curl_verify']);
         });
         $this->app->alias(MonitorDingClient::class, 'monitorDing');
+    }
+
+    public function provides()
+    {
+        return ['monitorDing'];
     }
 }
