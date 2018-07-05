@@ -36,6 +36,6 @@ class MonitorDingServiceProvider extends ServiceProvider {
 
     public function provides()
     {
-        return ['monitorDing'];
+        return ['monitorDing', MonitorDingClient::class];
     }
 }
