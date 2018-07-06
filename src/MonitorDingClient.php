@@ -89,6 +89,11 @@ class MonitorDingClient {
      * @throws SendErrorException
      */
     private function send($params=[]) {
+        if (! config('monitorDing.enabled')) {
+            app('Log')->info('~~ Monitor Ding ~~');
+            app('Log')->info($params);
+        }
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->webhook);
         curl_setopt($ch, CURLOPT_POST, 1);
