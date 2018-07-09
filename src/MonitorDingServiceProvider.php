@@ -5,8 +5,6 @@ use Illuminate\Support\ServiceProvider;
 
 class MonitorDingServiceProvider extends ServiceProvider {
 
-    protected $defer = true;
-
     /**
      * Boot the provider.
      *
@@ -18,6 +16,18 @@ class MonitorDingServiceProvider extends ServiceProvider {
             __DIR__.'/config.php' => config_path('monitorDing.php'),
         ]);
 
+        $this->registerMiddleware('Redgo\MonitorDing\Middleware\Monitor');
+    }
+
+    /**
+     * 注册中间件
+     *
+     * @param  string $middleware
+     */
+    protected function registerMiddleware($middleware)
+    {
+        $kernel = $this->app['Illuminate\Contracts\Http\Kernel'];
+        $kernel->pushMiddleware($middleware);
     }
 
     /**
@@ -32,10 +42,5 @@ class MonitorDingServiceProvider extends ServiceProvider {
             return new MonitorDingClient($config['webhook'], $config['curl_verify']);
         });
         $this->app->alias(MonitorDingClient::class, 'monitorDing');
-    }
-
-    public function provides()
-    {
-        return ['monitorDing', MonitorDingClient::class];
     }
 }
