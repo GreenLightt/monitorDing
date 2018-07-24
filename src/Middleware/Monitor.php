@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Redgo\MonitorDing\MonitorDingClient;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Monitor
 {
@@ -49,6 +50,9 @@ class Monitor
         $enabled = config('monitorDing.enabled');
         try {
             $response = $next($request);
+        } catch (NotFoundHttpException $e) {
+            $response = $this->handleException($request, $e);
+            $enabled && $this->monitor->sendText(sprintf("url：%s  404 not found", $request->fullUrl()));
         } catch (Exception $e) {
             $response = $this->handleException($request, $e);
             $enabled && $this->monitor->sendText(sprintf("文件：%s (%s 行) 内容：%s", $e->getFile(), $e->getLine(), $e->getMessage()));
