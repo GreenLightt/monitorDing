@@ -1,9 +1,15 @@
 <?php
 namespace Redgo\MonitorDing;
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
+use Redgo\MonitorDing\Commands\DealMessagesCommand;
 
 class MonitorDingServiceProvider extends ServiceProvider {
+
+    protected $commands = [
+        DealMessagesCommand::class,
+    ];
 
     /**
      * Boot the provider.
@@ -17,6 +23,13 @@ class MonitorDingServiceProvider extends ServiceProvider {
         ]);
 
         $this->registerMiddleware('Redgo\MonitorDing\Middleware\Monitor');
+
+        $this->loadViewsFrom(__DIR__ . '/Views', 'monitorDing');
+
+        $this->app->booted(function () {
+            $schedule = $this->app->make(Schedule::class);
+            $schedule->command('monitorDing:dealMessages')->everyMinute()->withoutOverlapping();
+        });
     }
 
     /**
@@ -42,5 +55,7 @@ class MonitorDingServiceProvider extends ServiceProvider {
             return new MonitorDingClient($config['webhook'], $config['curl_verify']);
         });
         $this->app->alias(MonitorDingClient::class, 'monitorDing');
+
+        $this->commands($this->commands);
     }
 }
