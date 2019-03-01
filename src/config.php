@@ -13,4 +13,10 @@ return [
 
     // webhook的值
     'webhook' => '',
+
+    // 项目名称
+    'project_name' => '',
+
+    // 过滤关键词
+    'filter' => [],
 ];

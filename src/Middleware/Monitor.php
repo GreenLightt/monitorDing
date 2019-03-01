@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Support\Str;
 use Redgo\MonitorDing\MonitorDingClient;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -48,18 +49,29 @@ class Monitor
      */
     public function handle($request, Closure $next)
     {
+        $project_name = config('monitorDing.project_name', '');
+        if (! empty($project_name)) {
+            $project_name = sprintf("【%s】", $project_name);
+        }
+
         try {
             $response = $next($request);
         } catch (NotFoundHttpException $e) {
             $response = $this->handleException($request, $e);
-            $this->customHandle(sprintf("url：%s  404 not found", $request->fullUrl()));
+            if (! $this->filter($request->fullUrl())) {
+                $this->customHandle(sprintf("%s url：%s  404 not found", $project_name, $request->fullUrl()));
+            }
         } catch (Exception $e) {
             $response = $this->handleException($request, $e);
-            $this->customHandle(sprintf("文件：%s (%s 行) 内容：%s", $e->getFile(), $e->getLine(), $e->getMessage()));
+            if (! $this->filter($e->getMessage())) {
+                $this->customHandle(sprintf("%s 文件：%s (%s 行) 内容：%s", $project_name, $e->getFile(), $e->getLine(), $e->getMessage()));
+            }
         } catch (Error $error) {
             $e = new FatalThrowableError($error);
             $response = $this->handleException($request, $e);
-            $this->customHandle(sprintf("文件：%s (%s 行) 内容：%s", $e->getFile(), $e->getLine(), $e->getMessage()));
+            if (! $this->filter($e->getMessage())) {
+                $this->customHandle(sprintf("%s 文件：%s (%s 行) 内容：%s", $project_name, $e->getFile(), $e->getLine(), $e->getMessage()));
+            }
         }
 
         return $response;
@@ -91,6 +103,21 @@ class Monitor
                 $this->monitor->sendText($info);
             }
         }
+    }
+
+    /**
+     * 判断是否包含需要过滤的内容
+     */
+    public function filter($content) {
+        $filter_pieces = config('monitorDing.filter', []);
+
+        foreach ($filter_pieces as $filter_piece) {
+            if (Str::contains($filter_piece, $content)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
